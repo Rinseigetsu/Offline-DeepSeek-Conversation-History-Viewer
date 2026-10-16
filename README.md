@@ -1,69 +1,79 @@
-# DeepSeek 对话阅读器 · Portable（免安装离线版）
+# DeepSeek Chat Reader · Portable (no installation, fully offline)
 
-单文件夹、零依赖、完全离线：拷到 U 盘或任意目录双击即用。**不需要 Python / Node / 联网 / 登录。**
-整包约 1.5 MB、47 个文件。
-旨在离线情况下快速游览对话内容。
+One folder, zero dependencies, completely offline: copy it onto a USB stick or anywhere else and
+double-click to run. **No Python / Node / internet / sign-in required.** The whole package is about
+1.4 MB across 45 files — meant for quickly browsing conversation content while offline.
+
 ---
 
-## 一、每个文件/目录是干什么的
+## 1. What each file and folder is for
 
-### 1. 入口与启动器（4 个，都可双击）
+### 1.1 Entry points and launchers (4 files, all double-clickable)
 
-| 文件 | 大小 | 作用 |
+| File | Size | Purpose |
 | --- | --- | --- |
-| `index.html` | 20 KB | 阅读器本体（单页）。加载官方样式 + 我的增强样式 + 数据 + `app.js`；页面里是侧栏/头部的真实结构，以及导入文件的 `<input>`、提示条、JSON 弹层。 |
-| `OPEN-READER.cmd` | 1 KB | 双击用默认浏览器打开 `index.html`（纯 ASCII，避免 cmd 代码页把中文注释当命令）。 |
-| `OPEN-READER.bat` | 1 KB | 同上，`.cmd` 关联被占用或改了就用这个。 |
-| `SERVE-AND-OPEN.cmd` | 1 KB | 可选：起一个本地 http 服务（`http://127.0.0.1:8777`）再打开。只有需要"复制到剪贴板"这类在 `file://` 下受限的能力时才需要它，单纯阅读用不上。 |
+| `index.html` | 17 KB | The reader itself (a single page). Loads the official stylesheet + my additions + the data + `app.js`. It contains the real sidebar/header structure, the `<input>` used for imports, the toast and the JSON overlay. |
+| `OPEN-READER.cmd` | 0.1 KB | Double-click to open `index.html` in your default browser (pure ASCII on purpose, so the cmd code page cannot mistake Chinese comments for commands). |
+| `OPEN-READER.bat` | 0.1 KB | The same; use this one if the `.cmd` association is taken over or broken. |
+| `SERVE-AND-OPEN.cmd` | 0.5 KB | Optional: starts a local http server (`http://127.0.0.1:8777`) and opens it. Only needed for things that are restricted on `file://` (such as copying to the clipboard). Plain reading does not need it. |
 
-### 2. `assets/` — 阅读器自己的代码（108 KB）
+### 1.2 `assets/` — the reader's own code (96 KB)
 
-| 文件 | 大小 | 作用 |
+| File | Size | Purpose |
 | --- | --- | --- |
-| `app.css` | 28 KB | **只放官方样式没有的部分**：搜索框、导入按钮、分支切换、联网来源卡片、页脚说明、空状态、浮动按钮、提示条、JSON 弹层、打印规则、窄屏适配。颜色与字体全部引用官方 `--dsw-*` 令牌，所以自动跟随官方主题。 |
-| `app.js` | 72 KB | 全部逻辑：数据加载（`file://` 下用经典 `<script>` 注入，绕开 `fetch`/ESM 限制）、对话树 → 页面渲染（分批渐进渲染）、Markdown/代码高亮/公式/引用角标管线、思考块、联网来源、分支 `‹ ›` 切换、全文搜索、深浅色、侧栏折叠，以及**浏览器内 .zip 导入**（自写 zip 解析 + `DecompressionStream` 解压 + 转换成阅读器结构 + IndexedDB 持久化）。 |
+| `app.css` | 26 KB | **Only the parts the official stylesheet does not cover**: search box, import button, branch switcher, web-source cards, footer note, empty state, floating buttons, toast, JSON overlay, print rules, narrow-screen tweaks. Every colour and font references the official `--dsw-*` tokens, so it follows the official theme automatically. |
+| `app.js` | 70 KB | All of the logic: data loading (on `file://` it injects classic `<script>` tags to work around the `fetch`/ESM restrictions), conversation tree → page rendering (progressively, in batches), the Markdown / syntax-highlighting / math / citation pipeline, thinking blocks, web sources, branch switching with `‹ ›`, full-text search, light/dark theme, sidebar collapsing, and the **in-browser .zip import** (hand-rolled zip reader + `DecompressionStream` + conversion into the reader's structure + IndexedDB persistence). |
 
-### 3. `data/` — 对话数据（portable 里是**空归档**，2 KB）
+### 1.3 `data/` — conversation data (an **empty archive** in Portable, 104 B)
 
-| 文件 | 大小 | 作用 |
+| File | Size | Purpose |
 | --- | --- | --- |
-| `manifest.js` | 1 KB | 对话清单与元信息（标题、时间、轮数、模型、分支）。portable 里初始化为 `{"convs":[]}`。 |
-| `search.js` | 1 KB | 全文搜索索引。portable 里 `{"rows":[]}`，搜索时才加载。 |
+| `manifest.js` | 66 B | The conversation list and metadata (title, timestamps, turn count, model, branches). Initialised in Portable as `{"convs":[]}`. |
+| `search.js` | 38 B | The full-text search index. Initialised in Portable as `{"rows":[]}`; loaded only when you search. |
 
-### 4. `vendor/` — 第三方与官方素材（1.35 MB，全部本地）
+### 1.4 `vendor/` — official and third-party assets (1.2 MB, all local)
 
-| 路径 | 大小 | 作用 |
+| Path | Size | Purpose |
 | --- | --- | --- |
-| `deepseek/main.css` | 296 KB | **官网那份样式本体**（设计令牌 + 侧栏/头部/消息/代码块等全部组件规则），只把 8 个 Inter 字体地址改成本地文件。 |
-| `deepseek/katex.css` | 21 KB | 官网那份 KaTeX 样式，20 个数学字体改成本地文件。 |
-| `marked.min.js` | 36 KB | Markdown 解析（v12）。 |
-| `purify.min.js` | 24 KB | HTML 消毒（DOMPurify），渲染前过滤。 |
-| `highlight.min.js` | 120 KB | 代码高亮（v11），配 `hljs-light.min.css` / `hljs-dark.min.css`（各 4 KB）随主题切换。 |
-| `katex.min.js` | 272 KB | 数学公式渲染。 |
-| `fonts/inter/*.woff2` | 8 个 | 官网同款 Inter 子集（正文/界面字体）。 |
-| `fonts/KaTeX_*.woff2` | 20 个 | KaTeX 数学字形。 |
+| `deepseek/main.css` | 289 KB | **The official stylesheet itself** (design tokens + every component rule for the sidebar, header, messages, code blocks, …). Only the 8 Inter font URLs were repointed at local files. |
+| `deepseek/katex.css` | 20 KB | The official KaTeX stylesheet; its 20 math fonts are local as well. |
+| `marked.min.js` | 35 KB | Markdown parser (v12). |
+| `purify.min.js` | 21 KB | HTML sanitiser (DOMPurify), run before rendering. |
+| `highlight.min.js` | 119 KB | Syntax highlighting (v11), together with `hljs-light.min.css` / `hljs-dark.min.css` (4 KB each) which switch with the theme. |
+| `katex.min.js` | 269 KB | Math typesetting. |
+| `fonts/inter/*.woff2` | 8 files | The same Inter subsets the official site uses (UI/body font). |
+| `fonts/KaTeX_*.woff2` | 20 files | KaTeX math glyphs. |
 
-## 二、第一次使用
+## 2. First run
 
-1. 双击 **`OPEN-READER.cmd`**（不行就 `OPEN-READER.bat`），或直接双击 `index.html`。
-2. 空列表上点「**选择 .zip 文件导入**」（也可以把 zip 直接拖进窗口）：
-   在 DeepSeek 网页端 → 设置 → 数据 → **导出数据**，得到 `deepseek_data-YYYY-MM-DD.zip`，选中它。
-3. 解压 + 转换在你的浏览器里本地完成，结果存在浏览器 IndexedDB，**下次打开还在**；
-   重复导入同一个 zip 会自动跳过已存在的对话。
+1. Double-click **`OPEN-READER.cmd`** (or `OPEN-READER.bat` if that does not work), or double-click
+   `index.html` directly.
+2. On the empty list, click **「选择 .zip 文件导入」** (you can also drag the zip into the window):
+   in the DeepSeek web app go to Settings → Data → **Export data** to get
+   `deepseek_data-YYYY-MM-DD.zip`, then pick that file.
+3. Unpacking and conversion happen locally inside your browser; the result is stored in the
+   browser's IndexedDB and **is still there the next time you open it**. Importing the same zip
+   again automatically skips the conversations that already exist.
 
-## 三、用法速查
+## 3. Usage cheat sheet
 
-- **阅读**：左侧点对话（Ctrl/⌘+点击 = 在官网打开同一条）；正文用官网那套排版
-- **搜索**：上方搜索框回车搜正文，`Ctrl+K` 聚焦
-- **思考过程 / 联网来源**：点标题展开，右上角可一键全展开
-- **多版本**：分支处用 `‹ 第 2/5 个版本 ›` 切换
-- **复制**：单条回答复制、右上角「复制全文」导出 Markdown；「JSON」看原始数据；「官网 ↗」跳转
-- **深浅色**：侧栏右上角 ◐（默认浅色）；**折叠侧栏**：头部左上角按钮（折叠后仍在，随时展开）
-- `Ctrl+P` 打印 / 存 PDF（自动隐藏侧栏、展开思考过程）
+- **Reading**: click a conversation on the left (Ctrl/⌘+click = open the same one on the official
+  site); the body uses the official site's typography
+- **Search**: type in the search box at the top and press Enter to search message text; `Ctrl+K` focuses it
+- **Thinking / web sources**: click the heading to expand; the buttons top-right expand everything at once
+- **Multiple versions**: at a branch point use `‹ 第 2/5 个版本 ›` to switch
+- **Copy**: copy a single answer, or use 「复制全文」 top-right to export the whole conversation as
+  Markdown; 「JSON」 shows the raw data; 「官网 ↗」 jumps to the official site
+- **Light/dark**: ◐ at the top-right of the sidebar (light by default); **collapsing the sidebar**:
+  the button at the top-left of the header (it stays there while collapsed, so you can always reopen it)
+- `Ctrl+P` to print / save as PDF (the sidebar is hidden and thinking blocks are expanded automatically)
 
-## 四、说明（与官网的差异）
+## 4. Notes (differences from the official site)
 
-- 纯阅读，没有对话输入框（不做发送）。
-- 附件原文件、正文图片不在导出包里：附件显示文件名与大小，图片显示占位并可点开原链接。
-- 思考耗时导出里没有，所以那行显示思考过程的字数。
-- 8 处损坏的 LaTeX 按原文红色显示，方便你发现。
+- Read-only: there is no message composer (you cannot send anything).
+- The interface language is Chinese.
+- Original attachment files and inline images are not part of the export: attachments show their file
+  name and size, images show a placeholder that links to the original URL.
+- The export does not contain thinking durations, so that line shows the character count of the
+  thinking text instead.
+- The 8 broken LaTeX expressions are shown as red source text so you can spot them.
